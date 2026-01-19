@@ -34,3 +34,22 @@ class HTMLNode:
             and self.children == other.children
             and self.props == other.props
         )
+
+
+class LeafNode(HTMLNode):
+    def __init__(
+        self, tag: str | None, value: str | None, props: dict[str, str] | None = None
+    ):
+        super().__init__(tag=tag, value=value, props=props)
+
+    def to_html(self):
+        if not self.value:
+            raise ValueError("Cannot convert empty LeafNode to HTML")
+
+        if not self.tag:
+            return self.value
+
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+    def __repr__(self):
+        return f"LeafNode(tag={self.tag}, value={self.value}, props={self.props})"
