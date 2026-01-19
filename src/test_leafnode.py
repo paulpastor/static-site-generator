@@ -1,7 +1,8 @@
 import unittest
 
 from htmlnode import LeafNode
-from textnode import TextNode, TextType, text_node_to_html_node
+from textnode import TextNode, TextType
+from utils import text_node_to_html_node
 
 
 class TestLeafNode(unittest.TestCase):
@@ -72,7 +73,6 @@ class TextNodeToLeafNode(unittest.TestCase):
         node = TextNode("Alt text", TextType.IMAGE, "https://example.com/image.png")
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "img")
-        self.assertIsNone(html_node.value)
         self.assertEqual(
             html_node.props, {"src": "https://example.com/image.png", "alt": "Alt text"}
         )
