@@ -1,7 +1,12 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import split_nodes_delimiter, text_node_to_html_node
+from utils import (
+    extract_markdown_images,
+    extract_markdown_links,
+    split_nodes_delimiter,
+    text_node_to_html_node,
+)
 
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -108,6 +113,22 @@ class TextNodeToLeafNode(unittest.TestCase):
         self.assertEqual(
             html_node.props, {"src": "https://example.com/image.png", "alt": "Alt text"}
         )
+
+
+class ExtractMarkdownImages(unittest.TestCase):
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+
+class ExtractMarkdownLinks(unittest.TestCase):
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_links(
+            "This is text with an [link](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("link", "https://i.imgur.com/zjjcJKZ.png")], matches)
 
 
 if __name__ == "__main__":
