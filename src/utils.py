@@ -56,29 +56,36 @@ def extract_markdown_links(text):
 def split_nodes_image(old_nodes):
     new_nodes = []
     for node in old_nodes:
-        if node.text is None:
-            continue
-
-        if node.text_type != TextType.TEXT:
+        # leave non-text nodes as-is
+        if node.text_type is not TextType.TEXT or node.text is None:
             new_nodes.append(node)
             continue
 
-        md = extract_markdown_links(node.text)
-        parts = node.text.split(f"![{md[0][0]}]({md[0][1]})", 1)
+        text = node.text
+        matches = extract_markdown_images(text)
 
-        split_nodes_for_current_node = []
-        split_nodes_for_current_node.append(TextNode(parts[0], TextType.TEXT))
-        split_nodes_for_current_node.append(
-            TextNode(md[0][0], TextType.IMAGE, md[0][1])
-        )
-        split_nodes_for_current_node.append(
-            TextNode(parts[1].split(f"[{md[1][0]}]({md[1][1]})")[0], TextType.TEXT)
-        )
-        split_nodes_for_current_node.append(
-            TextNode(md[1][0], TextType.IMAGE, md[1][1])
-        )
+        # if no images, keep the node as-is
+        if not matches:
+            new_nodes.append(node)
+            continue
 
-        new_nodes.extend(split_nodes_for_current_node)
+        # walk through the matches one by one
+        curr_text = text
+        for image_text, image_url in matches:
+            # split once on this specific markdown
+            markdown = f"![{image_text}]({image_url})"
+            before, sep, after = curr_text.partition(markdown)
+
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+
+            new_nodes.append(TextNode(image_text, TextType.IMAGE, image_url))
+
+            curr_text = after
+
+        # any trailing text after the last image
+        if curr_text:
+            new_nodes.append(TextNode(curr_text, TextType.TEXT))
 
     return new_nodes
 
@@ -86,25 +93,36 @@ def split_nodes_image(old_nodes):
 def split_nodes_link(old_nodes):
     new_nodes = []
     for node in old_nodes:
-        if node.text is None:
-            continue
-
-        if node.text_type != TextType.TEXT:
+        # leave non-text nodes as-is
+        if node.text_type is not TextType.TEXT or node.text is None:
             new_nodes.append(node)
             continue
 
-        md = extract_markdown_links(node.text)
-        parts = node.text.split(f"[{md[0][0]}]({md[0][1]})", 1)
+        text = node.text
+        matches = extract_markdown_links(text)
 
-        split_nodes_for_current_node = []
-        split_nodes_for_current_node.append(TextNode(parts[0], TextType.TEXT))
-        split_nodes_for_current_node.append(TextNode(md[0][0], TextType.LINK, md[0][1]))
-        split_nodes_for_current_node.append(
-            TextNode(parts[1].split(f"[{md[1][0]}]({md[1][1]})")[0], TextType.TEXT)
-        )
-        split_nodes_for_current_node.append(TextNode(md[1][0], TextType.LINK, md[1][1]))
+        # if no links, keep the node as-is
+        if not matches:
+            new_nodes.append(node)
+            continue
 
-        new_nodes.extend(split_nodes_for_current_node)
+        # walk through the matches one by one
+        curr_text = text
+        for link_text, link_url in matches:
+            # split once on this specific markdown
+            markdown = f"[{link_text}]({link_url})"
+            before, sep, after = curr_text.partition(markdown)
+
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+
+            new_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+
+            curr_text = after
+
+        # any trailing text after the last link
+        if curr_text:
+            new_nodes.append(TextNode(curr_text, TextType.TEXT))
 
     return new_nodes
 
