@@ -13,17 +13,15 @@ class TextType(Enum):
 
 
 class TextNode:
-    def __init__(self, text: str, text_type: TextType, url: str | None = None):
+    def __init__(self, text, text_type, url=None):
         self.text = text
         self.text_type = text_type
         self.url = url
 
     def __eq__(self, other):
-        if not isinstance(other, TextNode):
-            return False
         return (
-            self.text == other.text
-            and self.text_type == other.text_type
+            self.text_type == other.text_type
+            and self.text == other.text
             and self.url == other.url
         )
 
@@ -31,7 +29,7 @@ class TextNode:
         return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
 
 
-def text_node_to_html_node(text_node: TextNode):
+def text_node_to_html_node(text_node):
     if text_node.text_type == TextType.TEXT:
         return LeafNode(None, text_node.text)
     if text_node.text_type == TextType.BOLD:
@@ -44,4 +42,4 @@ def text_node_to_html_node(text_node: TextNode):
         return LeafNode("a", text_node.text, {"href": text_node.url})
     if text_node.text_type == TextType.IMAGE:
         return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
-    raise ValueError(f"Unsupported TextType: {text_node.text_type}")
+    raise ValueError(f"invalid text type: {text_node.text_type}")
