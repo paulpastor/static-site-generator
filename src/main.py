@@ -4,6 +4,23 @@ import shutil
 from markdown_blocks import markdown_to_html_node
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for item in os.listdir(dir_path_content):
+        src_path = os.path.join(dir_path_content, item)
+
+        if os.path.isfile(src_path):
+            # only files should become .html
+            dest_file = item
+            if dest_file.endswith(".md"):
+                dest_file = dest_file[:-3] + ".html"
+            dest_path = os.path.join(dest_dir_path, dest_file)
+            generate_page(src_path, template_path, dest_path)
+        else:
+            # recurse into subdirectories, mirroring structure
+            new_dest_dir = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(src_path, template_path, new_dest_dir)
+
+
 def generate_page(from_path, template_path, dest_path):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
@@ -56,7 +73,8 @@ def copy_static_recursive(src_dir, dest_dir):
 
 def main():
     copy_static_recursive("static", "public")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    # generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
 
 
 if __name__ == "__main__":
