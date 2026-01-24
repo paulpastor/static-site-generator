@@ -57,3 +57,7 @@ def copy_static_recursive(src_dir, dest_dir):
 def main():
     copy_static_recursive("static", "public")
     generate_page("content/index.md", "template.html", "public/index.html")
+
+
+if __name__ == "__main__":
+    main()
