@@ -1,8 +1,42 @@
 import os
 import shutil
 
+from markdown_blocks import markdown_to_html_node
 
-def move_recursive(src_dir, dest_dir):
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    with open(from_path) as f:
+        markdown = f.read()
+
+    with open(template_path) as f:
+        template = f.read()
+
+    html_node = markdown_to_html_node(markdown)
+    html = html_node.to_html()
+
+    title = extract_title(markdown)
+
+    template = template.replace("{{ Title }}", title)
+    template = template.replace("{{ Content }}", html)
+
+    dirname = os.path.dirname(dest_path)
+    if dirname and not os.path.exists(dirname):
+        os.makedirs(dirname)
+
+    with open(dest_path, "w") as f:
+        f.write(template)
+
+
+def extract_title(markdown):
+    for line in markdown.splitlines():
+        if line.startswith("# "):
+            return line[2:].strip()
+    raise Exception("Header was not found")
+
+
+def copy_static_recursive(src_dir, dest_dir):
     if os.path.exists(dest_dir):
         shutil.rmtree(dest_dir)
 
@@ -17,11 +51,9 @@ def move_recursive(src_dir, dest_dir):
         if os.path.isfile(src_path):
             shutil.copy(src_path, dest_path)
         else:
-            move_recursive(src_path, dest_path)
+            copy_static_recursive(src_path, dest_path)
 
 
 def main():
-    move_recursive("static", "public")
-
-
-main()
+    copy_static_recursive("static", "public")
+    generate_page("content/index.md", "template.html", "public/index.html")

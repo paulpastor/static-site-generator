@@ -1,13 +1,14 @@
 import unittest
+
 from inline_markdown import (
+    extract_markdown_images,
+    extract_markdown_links,
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
     text_to_textnodes,
-    extract_markdown_links,
-    extract_markdown_images,
 )
-
+from main import extract_title
 from textnode import TextNode, TextType
 
 
@@ -190,6 +191,10 @@ class TestInlineMarkdown(unittest.TestCase):
             ],
             nodes,
         )
+
+    def test_extract_title_h1(self):
+        title = extract_title("# Header")
+        self.assertEqual("Header", title)
 
 
 if __name__ == "__main__":
